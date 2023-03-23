@@ -69,7 +69,7 @@ class AugClassDict(DbAugmentDict):
         :param tables: tables in current schema
         """
         for (sch, tbl) in self:
-            if not (sch, tbl) in tables:
+            if (sch, tbl) not in tables:
                 raise KeyError("Table %s.%s not in current database" % (
                     sch, tbl))
             if not hasattr(self[(sch, tbl)], 'current'):

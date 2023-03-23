@@ -74,7 +74,7 @@ class AugSchemaDict(DbAugmentDict):
         :param schemas: schemas in current database
         """
         for sch in self:
-            if not sch in schemas:
+            if sch not in schemas:
                 raise KeyError("Schema %s not in current database" % sch)
             if not hasattr(self[sch], 'current'):
                 self[sch].current = schemas[sch]

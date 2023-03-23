@@ -12,37 +12,37 @@
 """
 import os
 import sys
-from operator import itemgetter
 from collections import defaultdict, deque
+from operator import itemgetter
+
 import yaml
 
-from pyrseas.lib.dbconn import DbConnection
-
-from pyrseas.yamlutil import yamldump
-from pyrseas.dbobject import fetch_reserved_words, DbObjectDict, DbSchemaObject
-from pyrseas.dbobject.language import LanguageDict
+from pyrseas.dbobject import DbObjectDict, DbSchemaObject, fetch_reserved_words
 from pyrseas.dbobject.cast import CastDict
-from pyrseas.dbobject.schema import SchemaDict
-from pyrseas.dbobject.dbtype import TypeDict
-from pyrseas.dbobject.table import ClassDict
+from pyrseas.dbobject.collation import CollationDict
 from pyrseas.dbobject.column import ColumnDict
 from pyrseas.dbobject.constraint import ConstraintDict
-from pyrseas.dbobject.index import IndexDict
+from pyrseas.dbobject.conversion import ConversionDict
+from pyrseas.dbobject.dbtype import TypeDict
+from pyrseas.dbobject.eventtrig import EventTriggerDict
+from pyrseas.dbobject.extension import ExtensionDict
+from pyrseas.dbobject.foreign import (ForeignDataWrapperDict,
+                                      ForeignServerDict, ForeignTableDict,
+                                      UserMappingDict)
 from pyrseas.dbobject.function import ProcDict
+from pyrseas.dbobject.index import IndexDict
+from pyrseas.dbobject.language import LanguageDict
 from pyrseas.dbobject.operator import OperatorDict
 from pyrseas.dbobject.operclass import OperatorClassDict
 from pyrseas.dbobject.operfamily import OperatorFamilyDict
 from pyrseas.dbobject.rule import RuleDict
+from pyrseas.dbobject.schema import SchemaDict
+from pyrseas.dbobject.table import ClassDict
+from pyrseas.dbobject.textsearch import (TSConfigurationDict, TSDictionaryDict,
+                                         TSParserDict, TSTemplateDict)
 from pyrseas.dbobject.trigger import TriggerDict
-from pyrseas.dbobject.conversion import ConversionDict
-from pyrseas.dbobject.textsearch import TSConfigurationDict, TSDictionaryDict
-from pyrseas.dbobject.textsearch import TSParserDict, TSTemplateDict
-from pyrseas.dbobject.foreign import ForeignDataWrapperDict
-from pyrseas.dbobject.foreign import ForeignServerDict, UserMappingDict
-from pyrseas.dbobject.foreign import ForeignTableDict
-from pyrseas.dbobject.extension import ExtensionDict
-from pyrseas.dbobject.collation import CollationDict
-from pyrseas.dbobject.eventtrig import EventTriggerDict
+from pyrseas.lib.dbconn import DbConnection
+from pyrseas.yamlutil import yamldump
 
 
 def flatten(lst):
@@ -255,7 +255,7 @@ class Database(object):
                         LEFT JOIN pg_index i2
                              ON refclassid = 'pg_class'::regclass
                              AND refobjid = i2.indexrelid
-                   WHERE deptype = 'n'
+                   WHERE deptype in ('n', 'e')
                    AND NOT (objid < 16384 AND refobjid < 16384)"""
         for r in dbconn.fetchall(query):
             alldeps[r['class_name'], r['objid']].append(
@@ -292,7 +292,7 @@ class Database(object):
                           d.refclassid::regclass, d.refobjid
                    FROM pg_attrdef ad JOIN pg_depend d
                         ON classid = 'pg_attrdef'::regclass AND objid = ad.oid
-                        AND deptype = 'n'"""
+                        AND deptype in ('n', 'e')"""
         for r in dbconn.fetchall(query):
             alldeps[r['class_name'], r['adrelid']].append(
                 (r['refclassid'], r['refobjid']))
@@ -641,6 +641,13 @@ class Database(object):
                     S.append(ch)
 
             del eout[obj]   # remove the empty set
+
+        assert bool(ein) == bool(eout)
+        if not ein:
+            return L
+        else:
+            # is it possible? How do we deal with that?
+            raise Exception("the objects dependencies graph has loops")
 
         assert bool(ein) == bool(eout)
         if not ein:

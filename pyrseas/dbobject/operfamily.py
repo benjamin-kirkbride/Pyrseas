@@ -6,8 +6,8 @@
     This module defines two classes: OperatorFamily derived from
     DbSchemaObject and OperatorFamilyDict derived from DbObjectDict.
 """
-from . import DbObjectDict, DbSchemaObject
-from . import commentable, ownable, split_schema_obj
+from . import (DbObjectDict, DbSchemaObject, commentable, ownable,
+               split_schema_obj)
 
 
 class OperatorFamily(DbSchemaObject):
@@ -42,9 +42,6 @@ class OperatorFamily(DbSchemaObject):
                  JOIN pg_am a ON (opfmethod = a.oid)
                  JOIN pg_namespace n ON (opfnamespace = n.oid)
             WHERE (nspname != 'pg_catalog' AND nspname != 'information_schema')
-              AND o.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_opfamily'::regclass)
             ORDER BY opfnamespace, opfname, amname"""
 
     @staticmethod

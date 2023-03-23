@@ -6,9 +6,8 @@
     This module defines two classes: EventTrigger derived from
     DbObject, and EventTriggerDict derived from DbObjectDict.
 """
-from . import DbObjectDict, DbObject
-from . import quote_id, commentable
-from .function import split_schema_func, join_schema_func
+from . import DbObject, DbObjectDict, commentable, quote_id
+from .function import join_schema_func, split_schema_func
 
 EXEC_PROC = 'EXECUTE PROCEDURE '
 
@@ -58,8 +57,6 @@ class EventTrigger(DbObject):
                    evttags AS tags, t.oid,
                    obj_description(t.oid, 'pg_event_trigger') AS description
             FROM pg_event_trigger t JOIN pg_roles ON (evtowner = pg_roles.oid)
-            WHERE t.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e')
             ORDER BY name"""
 
     @staticmethod

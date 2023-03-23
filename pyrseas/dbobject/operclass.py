@@ -6,8 +6,8 @@
     This module defines two classes: OperatorClass derived from
     DbSchemaObject and OperatorClassDict derived from DbObjectDict.
 """
-from . import DbObjectDict, DbSchemaObject
-from . import commentable, ownable, split_func_args, split_schema_obj
+from . import (DbObjectDict, DbSchemaObject, commentable, ownable,
+               split_func_args, split_schema_obj)
 
 
 class OperatorClass(DbSchemaObject):
@@ -56,9 +56,6 @@ class OperatorClass(DbSchemaObject):
                  JOIN pg_opfamily f ON (opcfamily = f.oid)
                  JOIN pg_namespace n ON (opcnamespace = n.oid)
             WHERE (nspname != 'pg_catalog' AND nspname != 'information_schema')
-              AND o.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_opclass'::regclass)
             ORDER BY nspname, opcname, amname"""
 
     @staticmethod
@@ -73,9 +70,6 @@ class OperatorClass(DbSchemaObject):
               AND classid = 'pg_amop'::regclass AND objid = ao.oid
               AND refobjid = o.oid
               AND (nspname != 'pg_catalog' AND nspname != 'information_schema')
-              AND o.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_opclass'::regclass)
             ORDER BY nspname, opcname, amname, amopstrategy"""
 
     @staticmethod
@@ -90,9 +84,6 @@ class OperatorClass(DbSchemaObject):
               AND classid = 'pg_amproc'::regclass AND objid = ap.oid
               AND refobjid = o.oid
               AND (nspname != 'pg_catalog' AND nspname != 'information_schema')
-              AND o.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_opclass'::regclass)
             ORDER BY nspname, opcname, amname, amprocnum"""
 
     @staticmethod
@@ -242,6 +233,12 @@ class OperatorClassDict(DbObjectDict):
         for key in inopcls:
             if not key.startswith('operator class ') or ' using ' not in key:
                 raise KeyError("Unrecognized object type: %s" % key)
+            pos = key.rfind(' using ')
+            opc = key[15:pos]  # 15 = len('operator class ')
+            idx = key[pos + 7:]  # 7 = len(' using ')
+            inobj = inopcls[key]
+            self[(schema.name, opc, idx)] = OperatorClass.from_map(
+                opc, schema, idx, inobj)
             pos = key.rfind(' using ')
             opc = key[15:pos]  # 15 = len('operator class ')
             idx = key[pos + 7:]  # 7 = len(' using ')

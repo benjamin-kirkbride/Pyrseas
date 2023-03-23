@@ -148,7 +148,7 @@ class ViewToSqlTestCase(InputMapToSqlTestCase):
             'columns': [{'todays_date': {'type': 'date'}}],
             'definition': " SELECT now()::date AS todays_date;"}})
         with pytest.raises(KeyError):
-            sql = self.to_sql(inmap, [CREATE_STMT])
+            self.to_sql(inmap, [CREATE_STMT])
 
     def test_change_column_type(self):
         "Change view column type to different type (disallowed)"
@@ -158,7 +158,7 @@ class ViewToSqlTestCase(InputMapToSqlTestCase):
                         {'c2': {'type': 'numeric'}}],
             'definition': " SELECT c1, c3 * 2.0 AS c2 FROM t1;"}})
         with pytest.raises(TypeError):
-            sql = self.to_sql(inmap, [CREATE_TBL, CREATE_STMT2])
+            self.to_sql(inmap, [CREATE_TBL, CREATE_STMT2])
 
     def test_view_depend_pk(self):
         "Create a view that depends on a primary key.  See issue #72"

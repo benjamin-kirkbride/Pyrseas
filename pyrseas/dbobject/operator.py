@@ -6,9 +6,8 @@
     This module defines two classes: Operator derived from
     DbSchemaObject and OperatorDict derived from DbObjectDict.
 """
-from . import DbObjectDict, DbSchemaObject
-from . import quote_id, commentable, ownable
-from . import split_schema_obj, split_func_args
+from . import (DbObjectDict, DbSchemaObject, commentable, ownable, quote_id,
+               split_func_args, split_schema_obj)
 
 
 class Operator(DbSchemaObject):
@@ -64,9 +63,6 @@ class Operator(DbSchemaObject):
             FROM pg_operator o JOIN pg_roles r ON (r.oid = oprowner)
                  JOIN pg_namespace n ON (oprnamespace = n.oid)
             WHERE (nspname != 'pg_catalog' AND nspname != 'information_schema')
-              AND o.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_operator'::regclass)
             ORDER BY nspname, oprname"""
 
     @staticmethod
@@ -228,6 +224,12 @@ class OperatorDict(DbObjectDict):
             if leftarg == 'NONE':
                 leftarg = None
             rightarg = rightarg.lstrip()
+            if rightarg == 'NONE':
+                rightarg = None
+            inobj = inopers[key]
+            opr = opr[:paren]
+            self[(schema.name, opr, leftarg, rightarg)] = Operator.from_map(
+                opr, schema, leftarg, rightarg, inobj)
             if rightarg == 'NONE':
                 rightarg = None
             inobj = inopers[key]

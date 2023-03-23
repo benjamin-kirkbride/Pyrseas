@@ -11,8 +11,8 @@
     TODO: UniqueConstraint and PrimaryKey are nearly identical.
           Perhaps the latter should inherit from the former.
 """
-from . import DbObjectDict, DbSchemaObject
-from . import quote_id, split_schema_obj, commentable
+from . import (DbObjectDict, DbSchemaObject, commentable, quote_id,
+               split_schema_obj)
 from .index import Index
 
 
@@ -90,8 +90,8 @@ class Constraint(DbSchemaObject):
             quote_id(self.name), self._table.qualname(), self._comment_text())
 
     def get_implied_deps(self, db):
-        from .table import Table
         from .dbtype import Domain
+        from .table import Table
         deps = super(Constraint, self).get_implied_deps(db)
 
         if isinstance(self._table, Table):
@@ -144,8 +144,6 @@ class CheckConstraint(Constraint):
                   AND nspname NOT LIKE 'pg_temp\_%'
                   AND nspname NOT LIKE 'pg_toast_temp\_%'
               AND contype = 'c'
-              AND contypid NOT IN (SELECT objid FROM pg_depend
-                  WHERE deptype = 'e' AND classid = 'pg_type'::regclass)
             ORDER BY schema, "table", name"""
 
     @staticmethod
@@ -276,10 +274,6 @@ class PrimaryKey(Constraint):
                   AND nspname NOT LIKE 'pg_temp\_%'
                   AND nspname NOT LIKE 'pg_toast_temp\_%'
               AND contype = 'p'
-              AND contypid NOT IN (SELECT objid FROM pg_depend
-                  WHERE deptype = 'e' AND classid = 'pg_type'::regclass)
-              AND conrelid NOT IN (SELECT objid FROM pg_depend
-                  WHERE deptype = 'e' AND classid = 'pg_class'::regclass)
             ORDER BY schema, "table", name"""
 
     @staticmethod
@@ -425,10 +419,6 @@ class ForeignKey(Constraint):
                   AND nspname NOT LIKE 'pg_temp\_%'
                   AND nspname NOT LIKE 'pg_toast_temp\_%'
               AND contype = 'f'
-              AND contypid NOT IN (SELECT objid FROM pg_depend
-                  WHERE deptype = 'e' AND classid = 'pg_type'::regclass)
-              AND conrelid NOT IN (SELECT objid FROM pg_depend
-                  WHERE deptype = 'e' AND classid = 'pg_class'::regclass)
             ORDER BY schema, "table", name"""
 
     @staticmethod
@@ -640,10 +630,6 @@ class UniqueConstraint(Constraint):
                   AND nspname NOT LIKE 'pg_temp\_%'
                   AND nspname NOT LIKE 'pg_toast_temp\_%'
               AND contype = 'u'
-              AND contypid NOT IN (SELECT objid FROM pg_depend
-                  WHERE deptype = 'e' AND classid = 'pg_type'::regclass)
-              AND conrelid NOT IN (SELECT objid FROM pg_depend
-                  WHERE deptype = 'e' AND classid = 'pg_class'::regclass)
             ORDER BY schema, "table", name"""
 
     @staticmethod

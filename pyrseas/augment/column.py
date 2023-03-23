@@ -46,7 +46,7 @@ class CfgColumnDict(DbAugmentDict):
     def __init__(self, config):
         self.col_trans_tbl = []
         for col in config:
-            if not 'name' in config[col]:
+            if "name" not in config[col]:
                 config[col]['name'] = col
             self[col] = CfgColumn(**config[col])
             self.col_trans_tbl.append(('{{%s}}' % col, self[col].name))

@@ -51,37 +51,37 @@ augmenter:
     functempl_audit_default: |2-
 
       BEGIN
-        NEW.{{modified_by_user}} = SESSION_USER;
-        NEW.{{modified_timestamp}} = CURRENT_TIMESTAMP;
-        RETURN NEW;
+        NEW.{{modified_by_user}} = SESSION_USER
+        NEW.{{modified_timestamp}} = CURRENT_TIMESTAMP
+        RETURN NEW
       END
     functempl_audit_full: |2-
 
       DECLARE
         user_name name := pyrseas.get_session_variable('audit_user',
-            SESSION_USER::varchar);
+            SESSION_USER::varchar)
         ip_address inet := pyrseas.get_session_variable('audit_ip_address',
-            COALESCE(pg_catalog.inet_client_addr()::varchar, '0.0.0.0'));
+            COALESCE(pg_catalog.inet_client_addr()::varchar, '0.0.0.0'))
       BEGIN
         IF TG_OP = 'INSERT' THEN
-          NEW.{{created_timestamp}} = CURRENT_TIMESTAMP;
-          NEW.{{created_by_user}} = user_name;
-          NEW.{{created_by_ip_address}} = ip_address;
+          NEW.{{created_timestamp}} = CURRENT_TIMESTAMP
+          NEW.{{created_by_user}} = user_name
+          NEW.{{created_by_ip_address}} = ip_address
         ELSIF TG_OP = 'UPDATE' THEN
-          NEW.{{created_timestamp}} = OLD.created_timestamp;
-          NEW.{{created_by_user}} = OLD.created_by_user;
-          NEW.{{created_by_ip_address}} = OLD.created_by_ip_address;
-        END IF;
-        NEW.{{modified_timestamp}} = CURRENT_TIMESTAMP;
-        NEW.{{modified_by_user}} = user_name;
-        NEW.{{modified_by_ip_address}} = ip_address;
-        RETURN NEW;
+          NEW.{{created_timestamp}} = OLD.created_timestamp
+          NEW.{{created_by_user}} = OLD.created_by_user
+          NEW.{{created_by_ip_address}} = OLD.created_by_ip_address
+        END IF
+        NEW.{{modified_timestamp}} = CURRENT_TIMESTAMP
+        NEW.{{modified_by_user}} = user_name
+        NEW.{{modified_by_ip_address}} = ip_address
+        RETURN NEW
       END
     functempl_audit_modified: |2-
 
       BEGIN
-        NEW.{{modified_timestamp}} = CURRENT_TIMESTAMP;
-        RETURN NEW;
+        NEW.{{modified_timestamp}} = CURRENT_TIMESTAMP
+        RETURN NEW
       END
   functions:
     audit_default():
@@ -112,25 +112,25 @@ augmenter:
       returns: character varying
       source: |2
           BEGIN
-            RETURN pg_catalog.current_setting('pyrseas.' || var_name);
-          END;
+            RETURN pg_catalog.current_setting('pyrseas.' || var_name)
+          END
     function get_session_variable(var_name character varying, default_value character varying):
       language: plpgsql
       returns: character varying
       source: |2
           BEGIN
-            RETURN pg_catalog.current_setting('pyrseas.' || var_name);
+            RETURN pg_catalog.current_setting('pyrseas.' || var_name)
           EXCEPTION
             WHEN undefined_object THEN
-              RETURN default_value;
-          END;
+              RETURN default_value
+          END
     function set_session_variable(var_name character varying, var_value character varying):
       language: plpgsql
       returns: void
       source: |2
           BEGIN
-            PERFORM pg_catalog.set_config('pyrseas.' || var_name, var_value, false);
-          END;
+            PERFORM pg_catalog.set_config('pyrseas.' || var_name, var_value, false)
+          END
   triggers:
     audit_default:
       events:

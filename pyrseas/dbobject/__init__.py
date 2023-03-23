@@ -46,7 +46,7 @@ def quote_id(name):
     :return: possibly quoted string
     """
     regular_id = True
-    if not name[0] in VALID_FIRST_CHARS or name in RESERVED_WORDS:
+    if name[0] not in VALID_FIRST_CHARS or name in RESERVED_WORDS:
         regular_id = False
     else:
         for ltr in name[1:]:

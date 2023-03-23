@@ -8,8 +8,9 @@
     FunctionDict derived from DbObjectDict.
 """
 from pyrseas.yamlutil import MultiLineStr
-from . import DbObjectDict, DbSchemaObject
-from . import commentable, ownable, grantable, split_schema_obj
+
+from . import (DbObjectDict, DbSchemaObject, commentable, grantable, ownable,
+               split_schema_obj)
 
 VOLATILITY_TYPES = {'i': 'immutable', 's': 'stable', 'v': 'volatile'}
 PARALLEL_SAFETY = {'r': 'restricted', 's': 'safe', 'u': 'unsafe'}
@@ -172,9 +173,6 @@ class Function(Proc):
                  JOIN pg_language l ON (prolang = l.oid)
             WHERE (nspname != 'pg_catalog' AND nspname != 'information_schema')
               AND %s
-              AND p.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_proc'::regclass)
             ORDER BY nspname, proname"""
         if dbversion < 110000:
             query = query % "NOT proisagg"
@@ -509,9 +507,6 @@ class Aggregate(Proc):
                  LEFT JOIN pg_aggregate a ON (p.oid = aggfnoid)
             WHERE (nspname != 'pg_catalog' AND nspname != 'information_schema')
               %s
-              AND p.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_proc'::regclass)
             ORDER BY nspname, proname"""
         extra = ("", "")
         if dbversion < 110000:
@@ -723,6 +718,13 @@ class ProcDict(DbObjectDict):
         :param dbtypes: dictionary of types
         """
         # TODO: this link is needed from map, not from sql.
+        # is this a pattern? I was assuming link_refs would have disappeared
+        # but I'm actually still maintaining them. Verify if they are always
+        # only used for from_map, not for from_catalog
+        for key in dbtypes:
+            t = dbtypes[key]
+            for f in t.find_defining_funcs(self):
+                f._defining = t
         # is this a pattern? I was assuming link_refs would have disappeared
         # but I'm actually still maintaining them. Verify if they are always
         # only used for from_map, not for from_catalog

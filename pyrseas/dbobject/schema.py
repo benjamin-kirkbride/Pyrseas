@@ -9,11 +9,11 @@
 import os
 
 from pyrseas.yamlutil import yamldump
-from . import DbObjectDict, DbObject
-from . import quote_id, commentable, ownable, grantable
+
+from . import DbObject, DbObjectDict, commentable, grantable, ownable, quote_id
 from .dbtype import BaseType, Composite, Domain, Enum, Range
-from .table import Table, Sequence
-from .view import View, MaterializedView
+from .table import Sequence, Table
+from .view import MaterializedView, View
 
 
 class Schema(DbObject):
@@ -52,9 +52,6 @@ class Schema(DbObject):
             WHERE nspname NOT IN ('information_schema', 'pg_toast')
                   AND nspname NOT LIKE 'pg_temp\_%'
                   AND nspname NOT LIKE 'pg_toast_temp\_%'
-            AND n.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                  AND classid = 'pg_namespace'::regclass)
             ORDER BY nspname"""
 
     @staticmethod

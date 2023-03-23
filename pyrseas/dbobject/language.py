@@ -10,7 +10,7 @@
     https://www.postgresql.org/docs/current/static/sql-createlanguage.html
     regarding status of procedural languages since Postgres 9.1.
 """
-from . import DbObjectDict, DbObject, quote_id
+from . import DbObjectDict, DbObject
 from .function import Function
 from .extension import CORE_LANGS
 

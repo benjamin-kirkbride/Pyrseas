@@ -6,9 +6,9 @@
     This module defines two classes: Trigger derived from
     DbSchemaObject, and TriggerDict derived from DbObjectDict.
 """
-from . import DbObjectDict, DbSchemaObject
-from . import quote_id, commentable, split_schema_obj
-from .function import split_schema_func, join_schema_func
+from . import (DbObjectDict, DbSchemaObject, commentable, quote_id,
+               split_schema_obj)
+from .function import join_schema_func
 
 EVENT_TYPES = ['insert', 'delete', 'update', 'truncate']
 
@@ -117,9 +117,6 @@ class Trigger(DbSchemaObject):
                  LEFT JOIN pg_constraint cn ON (tgconstraint = cn.oid)
             WHERE NOT tgisinternal
               AND (nspname != 'pg_catalog' AND nspname != 'information_schema')
-              AND t.tgfoid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_proc'::regclass)
             ORDER BY schema, "table", name"""
 
     @staticmethod

@@ -8,8 +8,8 @@
     from DbType, and TypeDict derived from DbObjectDict.
 """
 
-from . import DbObjectDict, DbSchemaObject
-from . import split_schema_obj, commentable, ownable
+from . import (DbObjectDict, DbSchemaObject, commentable, ownable,
+               split_schema_obj)
 from .constraint import CheckConstraint
 
 ALIGNMENT_TYPES = {'c': 'char', 's': 'int2', 'i': 'int4', 'd': 'double'}
@@ -113,9 +113,6 @@ class BaseType(DbType):
             WHERE typisdefined AND typtype = 'b' AND typarray != 0
               AND nspname NOT IN ('pg_catalog', 'pg_toast',
                                   'information_schema')
-              AND t.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_type'::regclass)
             ORDER BY nspname, typname"""
 
     @staticmethod
@@ -248,9 +245,6 @@ class Composite(DbType):
             WHERE typisdefined AND (typtype = 'c' AND relkind = 'c')
               AND nspname NOT IN ('pg_catalog', 'pg_toast',
                                   'information_schema')
-              AND t.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_type'::regclass)
             ORDER BY nspname, typname"""
 
     @staticmethod
@@ -384,9 +378,6 @@ class Enum(DbType):
             WHERE typisdefined AND typtype = 'e'
               AND nspname NOT IN ('pg_catalog', 'pg_toast',
                                   'information_schema')
-              AND t.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_type'::regclass)
             ORDER BY nspname, typname"""
 
     @staticmethod
@@ -470,9 +461,6 @@ class Domain(DbType):
             WHERE typisdefined AND typtype = 'd'
               AND nspname NOT IN ('pg_catalog', 'pg_toast',
                                   'information_schema')
-              AND t.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_type'::regclass)
             ORDER BY nspname, typname"""
 
     @staticmethod
@@ -584,9 +572,6 @@ class Range(DbType):
             WHERE t.typisdefined AND t.typtype = 'r'
               AND nspname NOT IN ('pg_catalog', 'pg_toast',
                                   'information_schema')
-              AND t.oid NOT IN (
-                  SELECT objid FROM pg_depend WHERE deptype = 'e'
-                               AND classid = 'pg_type'::regclass)
             ORDER BY nspname, t.typname"""
 
     @staticmethod

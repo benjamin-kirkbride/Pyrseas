@@ -319,19 +319,12 @@ class FunctionToSqlTestCase(InputMapToSqlTestCase):
             "ALTER FUNCTION sd.fadd(integer, integer) NOT LEAKPROOF"
 
     def test_change_function_return_type(self):
-        source = lambda rtype: "SELECT '127.0.0.1'::{}".format(rtype)
+        def source(rtype):
+            return "SELECT '127.0.0.1'::{}".format(rtype)
         old_type = 'text'
         new_type = 'inet'
-        statement = lambda rtype: cleandoc("""
-            CREATE OR REPLACE FUNCTION sd.fget_addr()
-            RETURNS {rtype}
-            LANGUAGE sql
-            IMMUTABLE
-            AS $_${body}$_$"""
-        ).format(
-            rtype=rtype,
-            body=source(rtype),
-        ).replace('\n', ' ')
+        def statement(rtype):
+            return cleandoc("\n            CREATE OR REPLACE FUNCTION sd.fget_addr()\n            RETURNS {rtype}\n            LANGUAGE sql\n            IMMUTABLE\n            AS $_${body}$_$").format(rtype=rtype, body=source(rtype)).replace("\n", " ")
 
         inmap = self.std_map()
         inmap['schema sd'].update({
